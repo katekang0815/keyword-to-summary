@@ -1,3 +1,4 @@
+
 const API_KEY = 'AIzaSyARXeG-NsIv-MfZCVe3mqqIR5EOFwAo3L0';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -47,11 +48,6 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
   
   const publishedAfter = new Date(now.getTime() - hoursBack * 60 * 60 * 1000).toISOString();
   
-  console.log(`Time range: ${timeRange}, Hours back: ${hoursBack}`);
-  console.log(`Current time: ${now.toISOString()}`);
-  console.log(`Published after: ${publishedAfter}`);
-  console.log(`Days difference: ${(now.getTime() - new Date(publishedAfter).getTime()) / (1000 * 60 * 60 * 24)}`);
-  
   // Step 1: Search for videos
   const searchUrl = new URL(`${BASE_URL}/search`);
   searchUrl.searchParams.append('key', API_KEY);
@@ -74,10 +70,6 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
   
   const searchData = await searchResponse.json();
   console.log('Search results:', searchData);
-  console.log('First few video publish dates:', searchData.items?.slice(0, 5).map((item: any) => ({
-    title: item.snippet.title,
-    publishedAt: item.snippet.publishedAt
-  })));
   
   if (!searchData.items || searchData.items.length === 0) {
     return [];
@@ -123,12 +115,6 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
       return true;
     })
     .sort((a: VideoResult, b: VideoResult) => b.viewCount - a.viewCount);
-
-  console.log('Final processed videos count:', videos.length);
-  console.log('Video date range:', {
-    earliest: videos[videos.length - 1]?.publishedAt,
-    latest: videos[0]?.publishedAt
-  });
 
   // Return top results based on time range
   let maxResults: number;
