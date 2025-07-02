@@ -1,8 +1,17 @@
-
 const API_KEY = 'AIzaSyARXeG-NsIv-MfZCVe3mqqIR5EOFwAo3L0';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
-export interface VideoResult { /* … */ }
+export interface VideoResult {
+  id: string;
+  title: string;
+  thumbnail: string;
+  channelTitle: string;
+  publishedAt: string;
+  viewCount: number;
+  duration: string;
+  channelId: string;
+}
+
 export interface SearchParams {
   keyword: string;
   timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
@@ -94,6 +103,15 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
   const maxResults = maxResultsByRange[timeRange] ?? 10;
 
   return videos.slice(0, maxResults);
+};
+
+export const fetchVideoDetails = async (videoId: string): Promise<VideoResult | null> => {
+  // Stub function for future API implementation
+  console.log('Fetching video details for ID:', videoId);
+  
+  // For now, return null - this can be implemented later to fetch full details
+  // from YouTube API using the video ID
+  return null;
 };
 
 const detectLanguage = (text: string): 'en' | 'ko' | 'unknown' => {

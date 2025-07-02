@@ -1,5 +1,6 @@
 
 import { VideoResult, formatViewCount, formatDuration } from '@/services/youtubeService';
+import { useNavigate } from 'react-router-dom';
 
 interface VideoCardProps {
   video: VideoResult;
@@ -7,8 +8,11 @@ interface VideoCardProps {
 }
 
 const VideoCard = ({ video, rank }: VideoCardProps) => {
+  const navigate = useNavigate();
+
   const handleVideoClick = () => {
-    window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank');
+    // Navigate to detail page with video data
+    navigate(`/videos/${video.id}`, { state: { video } });
   };
 
   const formatTimeAgo = (publishedAt: string) => {
