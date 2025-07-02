@@ -70,7 +70,7 @@ const Index = () => {
             YouTube Trending Videos
           </h1>
           <p className="text-gray-600">
-            Discover the most viewed videos in the last 24 hours or 7 days
+            Discover the most viewed videos
           </p>
         </div>
 
