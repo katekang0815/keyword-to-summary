@@ -2,17 +2,7 @@
 const API_KEY = 'AIzaSyARXeG-NsIv-MfZCVe3mqqIR5EOFwAo3L0';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
-export interface VideoResult {
-  id: string;
-  title: string;
-  thumbnail: string;
-  channelTitle: string;
-  publishedAt: string;
-  viewCount: number;
-  duration: string;
-  channelId: string;
-}
-
+export interface VideoResult { /* … */ }
 export interface SearchParams {
   keyword: string;
   timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
@@ -21,79 +11,60 @@ export interface SearchParams {
 
 export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoResult[]> => {
   const { keyword, timeRange, language } = params;
-  
-  // Calculate date for publishedBefore parameter
   const now = new Date();
-  let hoursBack: number;
   
-  switch (timeRange) {
-    case '24h':
-      hoursBack = 24;
-      break;
-    case '7d':
-      hoursBack = 168; // 7 days = 168 hours
-      break;
-    case '30d':
-      hoursBack = 720; // 30 days = 720 hours
-      break;
-    case '60d':
-      hoursBack = 1440; // 60 days = 1440 hours
-      break;
-    case '90d':
-      hoursBack = 2160; // 90 days = 2160 hours
-      break;
-    default:
-      hoursBack = 24;
+  // Parse timeRange like “7d” or “24h” into a Date
+  const match = timeRange.match(/^(\d+)([hd])$/);
+  let publishedAfter: Date;
+  if (match) {
+    const amount = parseInt(match[1], 10);
+    const unit   = match[2];
+    const msBack = unit === 'h'
+      ? amount * 60 * 60 * 1000
+      : amount * 24 * 60 * 60 * 1000;
+    publishedAfter = new Date(now.getTime() - msBack);
+  } else {
+    // Fallback to 24h
+    publishedAfter = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   }
-  
-  const publishedBefore = new Date(now.getTime() - hoursBack * 60 * 60 * 1000).toISOString();
-  
-  // Step 1: Search for videos
+
+  // Build the search URL
   const searchUrl = new URL(`${BASE_URL}/search`);
-  searchUrl.searchParams.append('key', API_KEY);
-  searchUrl.searchParams.append('q', keyword);
-  searchUrl.searchParams.append('type', 'video');
-  searchUrl.searchParams.append('publishedBefore', publishedBefore);
-  searchUrl.searchParams.append('maxResults', '50');
-  searchUrl.searchParams.append('order', 'date');
-  
+  searchUrl.searchParams.set('key', API_KEY);
+  searchUrl.searchParams.set('q', keyword);
+  searchUrl.searchParams.set('type', 'video');
+  searchUrl.searchParams.set('order', 'viewCount');                // <-- sort by views
+  searchUrl.searchParams.set('publishedAfter', publishedAfter.toISOString());
+  // Optionally bound it above to “now”
+  searchUrl.searchParams.set('publishedBefore', now.toISOString());
+  searchUrl.searchParams.set('maxResults', '50');
   if (language !== 'both') {
-    searchUrl.searchParams.append('relevanceLanguage', language);
+    searchUrl.searchParams.set('relevanceLanguage', language);
   }
 
-  console.log('Searching YouTube with URL:', searchUrl.toString());
-
-  const searchResponse = await fetch(searchUrl.toString());
-  if (!searchResponse.ok) {
-    throw new Error(`Search failed: ${searchResponse.statusText}`);
+  const searchResp = await fetch(searchUrl.toString());
+  if (!searchResp.ok) {
+    throw new Error(`Search failed: ${searchResp.statusText}`);
   }
-  
-  const searchData = await searchResponse.json();
-  console.log('Search results:', searchData);
-  
-  if (!searchData.items || searchData.items.length === 0) {
+  const searchData = await searchResp.json();
+  if (!searchData.items?.length) {
     return [];
   }
 
-  // Step 2: Get video details including view counts
-  const videoIds = searchData.items.map((item: any) => item.id.videoId).join(',');
-  
+  // Pull details for each video
+  const videoIds = searchData.items.map((it: any) => it.id.videoId).join(',');
   const videosUrl = new URL(`${BASE_URL}/videos`);
-  videosUrl.searchParams.append('key', API_KEY);
-  videosUrl.searchParams.append('id', videoIds);
-  videosUrl.searchParams.append('part', 'statistics,snippet,contentDetails');
+  videosUrl.searchParams.set('key', API_KEY);
+  videosUrl.searchParams.set('id', videoIds);
+  videosUrl.searchParams.set('part', 'statistics,snippet,contentDetails');
 
-  console.log('Fetching video details with URL:', videosUrl.toString());
-
-  const videosResponse = await fetch(videosUrl.toString());
-  if (!videosResponse.ok) {
-    throw new Error(`Videos fetch failed: ${videosResponse.statusText}`);
+  const videosResp = await fetch(videosUrl.toString());
+  if (!videosResp.ok) {
+    throw new Error(`Videos fetch failed: ${videosResp.statusText}`);
   }
-  
-  const videosData = await videosResponse.json();
-  console.log('Video details:', videosData);
+  const videosData = await videosResp.json();
 
-  // Step 3: Process and filter results
+  // Map, language‐filter and sort by viewCount just in case
   const videos: VideoResult[] = videosData.items
     .map((item: any) => ({
       id: item.id,
@@ -101,43 +72,27 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
       thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
       channelTitle: item.snippet.channelTitle,
       publishedAt: item.snippet.publishedAt,
-      viewCount: parseInt(item.statistics.viewCount || '0'),
+      viewCount: parseInt(item.statistics.viewCount || '0', 10),
       duration: item.contentDetails.duration,
-      channelId: item.snippet.channelId
+      channelId: item.snippet.channelId,
     }))
-    .filter((video: VideoResult) => {
-      // Filter by language if specified
-      if (language !== 'both') {
-        const detectedLang = detectLanguage(video.title);
-        if (language === 'en' && detectedLang !== 'en') return false;
-        if (language === 'ko' && detectedLang !== 'ko') return false;
-      }
-      return true;
+    .filter((v) => {
+      if (language === 'both') return true;
+      const lang = detectLanguage(v.title);
+      return lang === language;
     })
-    .sort((a: VideoResult, b: VideoResult) => b.viewCount - a.viewCount);
+    .sort((a, b) => b.viewCount - a.viewCount);
 
-  // Return top results based on time range
-  let maxResults: number;
-  switch (timeRange) {
-    case '24h':
-      maxResults = 10;
-      break;
-    case '7d':
-      maxResults = 30;
-      break;
-    case '30d':
-      maxResults = 30;
-      break;
-    case '60d':
-      maxResults = 30;
-      break;
-    case '90d':
-      maxResults = 30;
-      break;
-    default:
-      maxResults = 10;
-  }
-  
+  // Decide how many to return per range
+  const maxResultsByRange: Record<string, number> = {
+    '24h': 10,
+    '7d':  30,
+    '30d': 30,
+    '60d': 30,
+    '90d': 30,
+  };
+  const maxResults = maxResultsByRange[timeRange] ?? 10;
+
   return videos.slice(0, maxResults);
 };
 
