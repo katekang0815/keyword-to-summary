@@ -1,4 +1,3 @@
-
 const API_KEY = 'AIzaSyARXeG-NsIv-MfZCVe3mqqIR5EOFwAo3L0';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -15,7 +14,7 @@ export interface VideoResult {
 
 export interface SearchParams {
   keyword: string;
-  timeRange: '24h' | '7d';
+  timeRange: '24h' | '7d' | '30d';
   language: 'en' | 'ko' | 'both';
 }
 
@@ -24,7 +23,22 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
   
   // Calculate date for publishedAfter parameter
   const now = new Date();
-  const hoursBack = timeRange === '24h' ? 24 : 168; // 7 days = 168 hours
+  let hoursBack: number;
+  
+  switch (timeRange) {
+    case '24h':
+      hoursBack = 24;
+      break;
+    case '7d':
+      hoursBack = 168; // 7 days = 168 hours
+      break;
+    case '30d':
+      hoursBack = 720; // 30 days = 720 hours
+      break;
+    default:
+      hoursBack = 24;
+  }
+  
   const publishedAfter = new Date(now.getTime() - hoursBack * 60 * 60 * 1000).toISOString();
   
   // Step 1: Search for videos
@@ -96,7 +110,21 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
     .sort((a: VideoResult, b: VideoResult) => b.viewCount - a.viewCount);
 
   // Return top results based on time range
-  const maxResults = timeRange === '24h' ? 10 : 30;
+  let maxResults: number;
+  switch (timeRange) {
+    case '24h':
+      maxResults = 10;
+      break;
+    case '7d':
+      maxResults = 30;
+      break;
+    case '30d':
+      maxResults = 50;
+      break;
+    default:
+      maxResults = 10;
+  }
+  
   return videos.slice(0, maxResults);
 };
 

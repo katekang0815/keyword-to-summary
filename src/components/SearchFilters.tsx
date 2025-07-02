@@ -36,7 +36,7 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
           </label>
           <Select 
             value={params.timeRange} 
-            onValueChange={(value: '24h' | '7d') => onParamsChange({ ...params, timeRange: value })}
+            onValueChange={(value: '24h' | '7d' | '30d') => onParamsChange({ ...params, timeRange: value })}
           >
             <SelectTrigger>
               <SelectValue />
@@ -44,6 +44,7 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
             <SelectContent>
               <SelectItem value="24h">Last 24 hours</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
             </SelectContent>
           </Select>
         </div>

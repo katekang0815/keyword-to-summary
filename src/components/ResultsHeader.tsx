@@ -1,13 +1,31 @@
 
 interface ResultsHeaderProps {
   count: number;
-  timeRange: '24h' | '7d';
+  timeRange: '24h' | '7d' | '30d';
   keyword: string;
 }
 
 const ResultsHeader = ({ count, timeRange, keyword }: ResultsHeaderProps) => {
-  const timeText = timeRange === '24h' ? 'last 24 hours' : 'last 7 days';
-  const maxResults = timeRange === '24h' ? 10 : 30;
+  let timeText: string;
+  let maxResults: number;
+  
+  switch (timeRange) {
+    case '24h':
+      timeText = 'last 24 hours';
+      maxResults = 10;
+      break;
+    case '7d':
+      timeText = 'last 7 days';
+      maxResults = 30;
+      break;
+    case '30d':
+      timeText = 'last 30 days';
+      maxResults = 50;
+      break;
+    default:
+      timeText = 'last 24 hours';
+      maxResults = 10;
+  }
   
   return (
     <div className="mb-6">
