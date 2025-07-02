@@ -3,6 +3,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { VideoResult, fetchVideoDetails, formatViewCount, formatDuration } from '@/services/youtubeService';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
+import VideoTranscript from '@/components/VideoTranscript';
 
 const DetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -111,6 +112,9 @@ const DetailPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Transcript Section */}
+        <VideoTranscript videoId={video.id} />
       </div>
     </div>
   );
