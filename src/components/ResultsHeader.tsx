@@ -21,15 +21,15 @@ const ResultsHeader = ({ count, timeRange, keyword }: ResultsHeaderProps) => {
       break;
     case '30d':
       timeText = 'last 30 days';
-      maxResults = 50;
+      maxResults = 30;
       break;
     case '60d':
       timeText = 'last 60 days';
-      maxResults = 75;
+      maxResults = 30;
       break;
     case '90d':
       timeText = 'last 90 days';
-      maxResults = 100;
+      maxResults = 30;
       break;
     default:
       timeText = 'last 24 hours';

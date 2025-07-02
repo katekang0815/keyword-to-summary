@@ -1,3 +1,4 @@
+
 const API_KEY = 'AIzaSyARXeG-NsIv-MfZCVe3mqqIR5EOFwAo3L0';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -125,13 +126,13 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
       maxResults = 30;
       break;
     case '30d':
-      maxResults = 50;
+      maxResults = 30;
       break;
     case '60d':
-      maxResults = 75;
+      maxResults = 30;
       break;
     case '90d':
-      maxResults = 100;
+      maxResults = 30;
       break;
     default:
       maxResults = 10;
