@@ -1,7 +1,8 @@
 
+
 interface ResultsHeaderProps {
   count: number;
-  timeRange: '24h' | '7d' | '30d';
+  timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
   keyword: string;
 }
 
@@ -22,6 +23,14 @@ const ResultsHeader = ({ count, timeRange, keyword }: ResultsHeaderProps) => {
       timeText = 'last 30 days';
       maxResults = 50;
       break;
+    case '60d':
+      timeText = 'last 60 days';
+      maxResults = 75;
+      break;
+    case '90d':
+      timeText = 'last 90 days';
+      maxResults = 100;
+      break;
     default:
       timeText = 'last 24 hours';
       maxResults = 10;
@@ -40,3 +49,4 @@ const ResultsHeader = ({ count, timeRange, keyword }: ResultsHeaderProps) => {
 };
 
 export default ResultsHeader;
+

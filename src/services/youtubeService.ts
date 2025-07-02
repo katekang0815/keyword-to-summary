@@ -14,7 +14,7 @@ export interface VideoResult {
 
 export interface SearchParams {
   keyword: string;
-  timeRange: '24h' | '7d' | '30d';
+  timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
   language: 'en' | 'ko' | 'both';
 }
 
@@ -34,6 +34,12 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
       break;
     case '30d':
       hoursBack = 720; // 30 days = 720 hours
+      break;
+    case '60d':
+      hoursBack = 1440; // 60 days = 1440 hours
+      break;
+    case '90d':
+      hoursBack = 2160; // 90 days = 2160 hours
       break;
     default:
       hoursBack = 24;
@@ -120,6 +126,12 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
       break;
     case '30d':
       maxResults = 50;
+      break;
+    case '60d':
+      maxResults = 75;
+      break;
+    case '90d':
+      maxResults = 100;
       break;
     default:
       maxResults = 10;
