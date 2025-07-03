@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,17 +31,19 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     setError(null);
 
     try {
-      const { data, error, status } = await supabase.functions.invoke('get-transcript', {
+      const response = await supabase.functions.invoke('get-transcript', {
         body: { videoId },
         headers: { 'Content-Type': 'application/json' }
       });
-    
-      console.log('⏯️ get-transcript result:', { status, data, error });
+      
+      const { data, error } = response;
+      
+      console.log('⏯️ get-transcript result:', { status: response.status, data, error });
       if (error) throw error;
-    
+
       setTranscript(data.transcript || []);
       setIsAvailable(data.available);
-    
+
       if (!data.available) {
         setError(data.error || 'Transcript not available');
       }
@@ -51,9 +52,9 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
       setError('Failed to load transcript');
       setIsAvailable(false);
     } finally {
-          setIsLoading(false);
-        }
-    };
+      setIsLoading(false);
+    }
+  };
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
