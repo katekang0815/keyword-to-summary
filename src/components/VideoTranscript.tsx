@@ -50,8 +50,10 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
       console.error('❌ Error fetching transcript:', err);
       setError('Failed to load transcript');
       setIsAvailable(false);
-    }
-  };
+    } finally {
+          setIsLoading(false);
+        }
+    };
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
