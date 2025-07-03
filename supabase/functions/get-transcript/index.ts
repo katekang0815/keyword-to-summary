@@ -6,25 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
 serve(async (req)=>{
-  // Log everything first
-  console.log("➡️ Method:", req.method);
-  console.log("➡️ Headers:", Object.fromEntries(req.headers));
-  // Handle preflight early
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: corsHeaders
     });
   }
-  // Read the raw body exactly once
   const bodyText = await req.text();
-  console.log("➡️ Raw Body:", bodyText);
-  // Manually JSON-parse from that text
+  console.log("➡️ Raw Body:", JSON.stringify(bodyText)); // now this will be your JSON string
   let videoId;
   try {
-    const payload = bodyText ? JSON.parse(bodyText) : {};
-    videoId = payload.videoId;
-  } catch (e) {
-    console.error("❌ JSON parse failed:", e);
+    const parsed = JSON.parse(bodyText);
+    videoId = parsed.videoId;
+  } catch  {
+    console.error("❌ Failed to parse JSON body");
   }
   if (!videoId) {
     return new Response(JSON.stringify({
