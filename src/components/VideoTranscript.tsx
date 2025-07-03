@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TranscriptItem {
   text: string;
@@ -6,54 +10,110 @@ interface TranscriptItem {
   duration: number;
 }
 
-interface TranscriptResponse {
-  transcript: TranscriptItem[];
-  available: boolean;
-  error?: string;
+interface VideoTranscriptProps {
+  videoId: string;
 }
 
-export default function VideoTranscript({ videoId }: { videoId: string }) {
-  const [lines, setLines] = useState<TranscriptItem[]>([]);
-  const [loading, setLoading] = useState(false);
+const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
+  const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch("https://<your-edge-fn-url>/getTranscript", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoId }),
-    })
-      .then((res) => res.json() as Promise<TranscriptResponse>)
-      .then((data) => {
-        if (data.available) {
-          setLines(data.transcript);
-        } else {
-          setError(data.error || "Transcript not available.");
-        }
-      })
-      .catch(() => {
-        setError("Transcript not available.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [videoId]);
+    if (isVisible && transcript.length === 0 && isAvailable === null) {
+      fetchTranscript();
+    }
+  }, [isVisible, videoId]);
 
-  if (loading) {
-    return <p className="mt-4 text-gray-600">Loading transcript…</p>;
-  }
-  if (error) {
-    return <p className="mt-4 text-gray-600">{error}</p>;
-  }
+  const fetchTranscript = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { data, error, status } = await supabase.functions.invoke('get-transcript', {
+        body: { videoId },
+        headers: { 'Content-Type': 'application/json' }
+      });
+    
+      console.log('⏯️ get-transcript result:', { status, data, error });
+      if (error) throw error;
+    
+      setTranscript(data.transcript || []);
+      setIsAvailable(data.available);
+    
+      if (!data.available) {
+        setError(data.error || 'Transcript not available');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching transcript:', err);
+      setError('Failed to load transcript');
+      setIsAvailable(false);
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleTimestampClick = (startTime: number) => {
+    // In a real implementation, this would seek to the timestamp in the video player
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}&t=${Math.floor(startTime)}s`;
+    window.open(youtubeUrl, '_blank');
+  };
 
   return (
-    <div className="mt-8 bg-white p-4 rounded-lg shadow-sm max-h-64 overflow-y-auto">
-      {lines.map((line, i) => (
-        <p key={i} className="text-sm leading-relaxed">
-          {line.text}
-        </p>
-      ))}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+      <button
+        onClick={() => setIsVisible(!isVisible)}
+        className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Clock size={20} className="text-gray-600" />
+          <span className="font-medium text-gray-900">Transcript</span>
+        </div>
+        {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      </button>
+
+      {isVisible && (
+        <div className="px-6 pb-6">
+          {isLoading && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+              <p className="text-gray-600 mt-2">Loading transcript...</p>
+            </div>
+          )}
+
+          {error && !isLoading && (
+            <div className="text-center py-8">
+              <p className="text-gray-600">{error}</p>
+            </div>
+          )}
+
+          {!isLoading && isAvailable && transcript.length > 0 && (
+            <ScrollArea className="h-96 w-full border rounded-lg p-4">
+              <div className="space-y-3">
+                {transcript.map((item, index) => (
+                  <div key={index} className="flex gap-3 group">
+                    <button
+                      onClick={() => handleTimestampClick(item.start)}
+                      className="flex-shrink-0 text-xs text-blue-600 hover:text-blue-800 font-mono bg-blue-50 px-2 py-1 rounded group-hover:bg-blue-100 transition-colors"
+                    >
+                      {formatTime(item.start)}
+                    </button>
+                    <p className="text-gray-800 text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default VideoTranscript;
