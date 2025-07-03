@@ -32,19 +32,17 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     setError(null);
 
     try {
-      const response = await supabase.functions.invoke('get-transcript', {
+      const { data, error, status } = await supabase.functions.invoke('get-transcript', {
         body: { videoId },
         headers: { 'Content-Type': 'application/json' }
       });
-      
-      const { data, error } = response;
-      
-      console.log('⏯️ get-transcript result:', { data, error });
+    
+      console.log('⏯️ get-transcript result:', { status, data, error });
       if (error) throw error;
-
+    
       setTranscript(data.transcript || []);
       setIsAvailable(data.available);
-
+    
       if (!data.available) {
         setError(data.error || 'Transcript not available');
       }
@@ -78,9 +76,6 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         <div className="flex items-center gap-2">
           <Clock size={20} className="text-gray-600" />
           <span className="font-medium text-gray-900">Transcript</span>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            ID: {videoId}
-          </span>
         </div>
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
