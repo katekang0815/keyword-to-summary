@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,7 +39,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
       
       const { data, error } = response;
       
-      console.log('⏯️ get-transcript result:', { status: response.status, data, error });
+      console.log('⏯️ get-transcript result:', { data, error });
       if (error) throw error;
 
       setTranscript(data.transcript || []);
@@ -77,6 +78,9 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         <div className="flex items-center gap-2">
           <Clock size={20} className="text-gray-600" />
           <span className="font-medium text-gray-900">Transcript</span>
+          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            ID: {videoId}
+          </span>
         </div>
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
