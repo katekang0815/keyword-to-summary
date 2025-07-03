@@ -32,22 +32,25 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     setError(null);
 
     try {
-      const { data, error, status } = await supabase.functions.invoke('get-transcript', {
-        body: { videoId },
-        headers: { 'Content-Type': 'application/json' }
-      });
-    
-      console.log('⏯️ get-transcript result:', { status, data, error });
-      if (error) throw error;
-    
+      const { data, error, status } = await supabase
+        .functions
+        .invoke("get-transcript", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId }),
+        });
+      if (error) {
+        throw error;
+      }
+
       setTranscript(data.transcript || []);
       setIsAvailable(data.available);
-    
+      
       if (!data.available) {
         setError(data.error || 'Transcript not available');
       }
     } catch (err) {
-      console.error('❌ Error fetching transcript:', err);
+      console.error('Error fetching transcript:', err);
       setError('Failed to load transcript');
       setIsAvailable(false);
     } finally {
