@@ -27,39 +27,45 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     }
   }, [isVisible, videoId]);
 
-  const fetchTranscript = async () => {
-    setIsLoading(true);
-    setError(null);
+ const fetchTranscript = async () => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      const response = await supabase
-        .functions
-        .invoke("get-transcript", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ videoId }),
-        });
-      
-      console.log('⏯️ get-transcript result:', { data: response.data, error: response.error });
-      
-      if (response.error) {
-        throw response.error;
-      }
+  try {
+    // ——— DEBUG: show what we're about to send ———
+    const payload = { videoId };
+    console.log("📤 Invoking get-transcript with payload:", payload);
 
-      setTranscript(response.data.transcript || []);
-      setIsAvailable(response.data.available);
-      
-      if (!response.data.available) {
-        setError(response.data.error || 'Transcript not available');
+    const { data, error, status } = await supabase.functions.invoke(
+      "get-transcript",
+      {
+        method:  "POST",                                  // explicitly POST
+        headers: { "Content-Type": "application/json" },  // set JSON header
+        body:    JSON.stringify(payload),                 // stringify payload
       }
-    } catch (err) {
-      console.error('Error fetching transcript:', err);
-      setError('Failed to load transcript');
-      setIsAvailable(false);
-    } finally {
-      setIsLoading(false);
+    );
+
+    // ——— DEBUG: inspect the raw response ———
+    console.log("📥 get-transcript result:", { status, data, error });
+
+    if (error) {
+      throw error;
     }
-  };
+
+    setTranscript(data?.transcript || []);
+    setIsAvailable(data?.available ?? false);
+
+    if (!data?.available) {
+      setError(data?.error || "Transcript not available");
+    }
+  } catch (err) {
+    console.error("❌ Error fetching transcript:", err);
+    setError("Failed to load transcript");
+    setIsAvailable(false);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -82,9 +88,6 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         <div className="flex items-center gap-2">
           <Clock size={20} className="text-gray-600" />
           <span className="font-medium text-gray-900">Transcript</span>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            ID: {videoId}
-          </span>
         </div>
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
