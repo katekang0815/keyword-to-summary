@@ -27,45 +27,48 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     }
   }, [isVisible, videoId]);
 
- const fetchTranscript = async () => {
-  setIsLoading(true);
-  setError(null);
-
-  try {
-    // ——— DEBUG: show what we're about to send ———
-    const payload = { videoId };
-    console.log("📤 Invoking get-transcript with payload:", payload);
-
-    const { data, error, status } = await supabase.functions.invoke(
-      "get-transcript",
-      {
-        method:  "POST",                                  // explicitly POST
-        headers: { "Content-Type": "application/json" },  // set JSON header
-        body:    JSON.stringify(payload),                 // stringify payload
+  const payload = { videoId };
+  console.log("📤 Invoking get-transcript with payload:", payload);
+  
+  const fetchTranscript = async () => {
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      // ——— DEBUG: show what we're about to send ———
+      const payload = { videoId };
+      console.log("📤 Invoking get-transcript with payload:", payload);
+  
+      const { data, error, status } = await supabase.functions.invoke(
+        "get-transcript",
+        {
+          // SUPABASE JS will stringify your object for you and set
+          // the correct Content-Type, so *you don’t need* method/headers
+          body: payload,
+        }
+      );
+  
+      // ——— DEBUG: inspect the raw response ———
+      console.log("📥 get-transcript result:", { status, data, error });
+  
+      if (error) {
+        throw error;
       }
-    );
-
-    // ——— DEBUG: inspect the raw response ———
-    console.log("📥 get-transcript result:", { status, data, error });
-
-    if (error) {
-      throw error;
+  
+      setTranscript(data?.transcript || []);
+      setIsAvailable(data?.available ?? false);
+  
+      if (!data?.available) {
+        setError(data?.error || "Transcript not available");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching transcript:", err);
+      setError("Failed to load transcript");
+      setIsAvailable(false);
+    } finally {
+      setIsLoading(false);
     }
-
-    setTranscript(data?.transcript || []);
-    setIsAvailable(data?.available ?? false);
-
-    if (!data?.available) {
-      setError(data?.error || "Transcript not available");
-    }
-  } catch (err) {
-    console.error("❌ Error fetching transcript:", err);
-    setError("Failed to load transcript");
-    setIsAvailable(false);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
