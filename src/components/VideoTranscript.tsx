@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, ExternalLink } from 'lucide-react';
 
 interface VideoTranscriptProps {
   videoId: string;
@@ -48,6 +48,10 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     }
   };
 
+  const handleVideoClick = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
       <button
@@ -85,11 +89,47 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
                 <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
               </div>
               
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Response:</h3>
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-3 rounded border">
-                  {JSON.stringify(webhookResponse, null, 2)}
-                </pre>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
+                {/* Summary Section */}
+                {webhookResponse.response && (
+                  <div>
+                    <h3 className="flex items-center gap-2 font-medium text-gray-900 mb-2">
+                      📤 Summary:
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {webhookResponse.response}
+                    </p>
+                  </div>
+                )}
+
+                {/* Related Section */}
+                {webhookResponse.output && (
+                  <div>
+                    <h3 className="flex items-center gap-2 font-medium text-gray-900 mb-3">
+                      🔑 Related:
+                    </h3>
+                    <div className="space-y-2">
+                      {webhookResponse.output.title && (
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <span>▶️</span>
+                          <span>{webhookResponse.output.title}</span>
+                        </div>
+                      )}
+                      {webhookResponse.output.url && (
+                        <div className="flex items-center gap-2">
+                          <span>▶️</span>
+                          <button
+                            onClick={() => handleVideoClick(webhookResponse.output.url)}
+                            className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1 transition-colors"
+                          >
+                            {webhookResponse.output.url}
+                            <ExternalLink size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
