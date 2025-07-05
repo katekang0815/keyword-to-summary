@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchYouTubeVideos, VideoResult, SearchParams } from '@/services/youtubeService';
 import SearchFilters from '@/components/SearchFilters';
 import VideoCard from '@/components/VideoCard';
@@ -17,6 +16,42 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
+
+  // Load preserved state on component mount
+  useEffect(() => {
+    const preservedState = sessionStorage.getItem('youtube-search-state');
+    if (preservedState) {
+      try {
+        const parsed = JSON.parse(preservedState);
+        setSearchParams(parsed.searchParams);
+        setVideos(parsed.videos);
+        setHasSearched(parsed.hasSearched);
+        // Clear the preserved state after loading
+        sessionStorage.removeItem('youtube-search-state');
+      } catch (error) {
+        console.error('Error loading preserved state:', error);
+      }
+    }
+  }, []);
+
+  // Preserve state when navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (hasSearched && videos.length > 0) {
+        sessionStorage.setItem('youtube-search-state', JSON.stringify({
+          searchParams,
+          videos,
+          hasSearched
+        }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [searchParams, videos, hasSearched]);
 
   const handleSearch = async () => {
     if (!searchParams.keyword.trim()) {
