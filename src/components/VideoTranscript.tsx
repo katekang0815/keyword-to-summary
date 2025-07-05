@@ -48,6 +48,52 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     }
   };
 
+  const renderFormattedResponse = () => {
+    if (!webhookResponse) return null;
+
+    const summaryText = webhookResponse.response?.text || 'No summary available';
+    const outputLinks = webhookResponse.output || [];
+
+    return (
+      <div className="py-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+          <div>
+            <h3 className="font-semibold text-gray-900 text-lg mb-3">Summary:</h3>
+            <p className="text-gray-700 leading-relaxed">{summaryText}</p>
+          </div>
+
+          {outputLinks && outputLinks.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-gray-900 text-lg mb-3">Links:</h3>
+              <ul className="space-y-2">
+                {outputLinks.map((link: any, index: number) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-gray-600 mr-2">-</span>
+                    <div>
+                      <span className="text-gray-900">{link.title || `Link ${index + 1}`}: </span>
+                      <a 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline"
+                      >
+                        {link.url}
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
       <button
@@ -79,20 +125,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
             </div>
           )}
 
-          {webhookResponse && !isLoading && !error && (
-            <div className="py-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
-              </div>
-              
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Response:</h3>
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-3 rounded border">
-                  {JSON.stringify(webhookResponse, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
+          {webhookResponse && !isLoading && !error && renderFormattedResponse()}
         </div>
       )}
     </div>
