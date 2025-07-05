@@ -9,14 +9,16 @@ interface VideoTranscriptProps {
 const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [webhookResponse, setWebhookResponse] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const sendToWebhook = async () => {
     setIsLoading(true);
-    setMessage(null);
+    setWebhookResponse(null);
+    setError(null);
 
     try {
-      const response = await fetch('http://localhost:5678/webhook-test/summaryapp', {
+      const response = await fetch('http://localhost:5678/webhook/summaryapp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -24,14 +26,16 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         body: JSON.stringify({ videoId }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        setMessage('Video data sent successfully to processing platform');
+        setWebhookResponse(data);
       } else {
-        setMessage('Failed to send video data');
+        setError('Failed to process video data');
       }
     } catch (error) {
       console.error('Error sending to webhook:', error);
-      setMessage('Failed to send video data');
+      setError('Failed to connect to processing service');
     } finally {
       setIsLoading(false);
     }
@@ -63,13 +67,30 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
           {isLoading && (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-              <p className="text-gray-600 mt-2">Sending video data to processing platform...</p>
+              <p className="text-gray-600 mt-2">Processing video data...</p>
             </div>
           )}
 
-          {message && !isLoading && (
+          {error && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-gray-600">{message}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-700">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {webhookResponse && !isLoading && !error && (
+            <div className="py-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
+              </div>
+              
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-2">Response:</h3>
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-white p-3 rounded border">
+                  {JSON.stringify(webhookResponse, null, 2)}
+                </pre>
+              </div>
             </div>
           )}
         </div>
