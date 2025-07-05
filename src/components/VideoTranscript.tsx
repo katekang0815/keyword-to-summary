@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
@@ -15,7 +16,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     setMessage(null);
 
     try {
-      const response = await fetch('http://localhost:5678/webhook/summaryapp', {
+      const response = await fetch('http://localhost:5678/webhook-test/summaryapp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
