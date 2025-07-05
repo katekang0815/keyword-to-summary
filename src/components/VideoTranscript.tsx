@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Clock, ExternalLink } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
 interface VideoTranscriptProps {
   videoId: string;
@@ -48,8 +48,13 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     }
   };
 
-  const handleVideoClick = (url: string) => {
-    window.open(url, '_blank');
+  const formatResponseData = (data: any) => {
+    // Handle different possible response structures
+    if (typeof data === 'string') {
+      return { content: data };
+    }
+    
+    return data;
   };
 
   return (
@@ -89,47 +94,36 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
                 <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
               </div>
               
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
-                {/* Summary Section */}
-                {webhookResponse.response && (
-                  <div>
-                    <h3 className="flex items-center gap-2 font-medium text-gray-900 mb-2">
-                      📤 Summary:
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {webhookResponse.response}
-                    </p>
-                  </div>
-                )}
-
-                {/* Related Section */}
-                {webhookResponse.output && (
-                  <div>
-                    <h3 className="flex items-center gap-2 font-medium text-gray-900 mb-3">
-                      🔑 Related:
-                    </h3>
-                    <div className="space-y-2">
-                      {webhookResponse.output.title && (
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <span>▶️</span>
-                          <span>{webhookResponse.output.title}</span>
-                        </div>
-                      )}
-                      {webhookResponse.output.url && (
-                        <div className="flex items-center gap-2">
-                          <span>▶️</span>
-                          <button
-                            onClick={() => handleVideoClick(webhookResponse.output.url)}
-                            className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1 transition-colors"
-                          >
-                            {webhookResponse.output.url}
-                            <ExternalLink size={14} />
-                          </button>
-                        </div>
-                      )}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">AI Video Analysis Report</h3>
+                
+                {(() => {
+                  const formattedData = formatResponseData(webhookResponse);
+                  
+                  return Object.entries(formattedData).map(([key, value]) => (
+                    <div key={key} className="mb-4">
+                      <h4 className="font-semibold text-gray-800 mb-2 capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
+                      </h4>
+                      <div className="bg-white p-3 rounded border">
+                        {typeof value === 'object' && value !== null ? (
+                          <div className="space-y-2">
+                            {Object.entries(value).map(([subKey, subValue]) => (
+                              <div key={subKey} className="border-l-2 border-orange-200 pl-3">
+                                <span className="font-medium text-gray-700 capitalize">
+                                  {subKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
+                                </span>
+                                <p className="text-gray-600 mt-1">{String(subValue)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-700 whitespace-pre-wrap">{String(value)}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ));
+                })()}
               </div>
             </div>
           )}
