@@ -1,110 +1,96 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+
+interface TranscriptItem {
+  text: string;
+  start: number;
+  duration: number;
+}
 
 interface VideoTranscriptProps {
   videoId: string;
 }
 
 const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
+  const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [webhookResponse, setWebhookResponse] = useState<any>(null);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sendToWebhook = async () => {
+  useEffect(() => {
+    if (isVisible && transcript.length === 0 && isAvailable === null) {
+      fetchTranscript();
+    }
+  }, [isVisible, videoId]);
+
+  const payload = { videoId };
+  console.log("📤 Invoking get-transcript with payload:", payload);
+  
+  const fetchTranscript = async () => {
     setIsLoading(true);
-    setWebhookResponse(null);
     setError(null);
-
+  
     try {
-      const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-      const response = await fetch('http://localhost:5678/webhook-test/summaryapp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: videoUrl }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setWebhookResponse(data);
-      } else {
-        setError('Failed to process video data');
+      // ——— DEBUG: show what we're about to send ———
+      const payload = { videoId };
+      console.log("📤 Invoking get-transcript with payload:", payload);
+  
+      const { data, error, status } = await supabase.functions.invoke(
+        "get-transcript",
+        {
+          // SUPABASE JS will stringify your object for you and set
+          // the correct Content-Type, so *you don’t need* method/headers
+          body: payload,
+        }
+      );
+  
+      // ——— DEBUG: inspect the raw response ———
+      console.log("📥 get-transcript result:", { status, data, error });
+  
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error('Error sending to webhook:', error);
-      setError('Failed to connect to processing service');
+  
+      setTranscript(data?.transcript || []);
+      setIsAvailable(data?.available ?? false);
+  
+      if (!data?.available) {
+        setError(data?.error || "Transcript not available");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching transcript:", err);
+      setError("Failed to load transcript");
+      setIsAvailable(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleToggle = () => {
-    setIsVisible(!isVisible);
-    if (!isVisible) {
-      sendToWebhook();
-    }
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const renderFormattedResponse = () => {
-    if (!webhookResponse) return null;
-
-    const summaryText = webhookResponse.response?.text || 'No summary available';
-    const outputLinks = webhookResponse.output || [];
-
-    return (
-      <div className="py-4">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-          <p className="text-green-700 font-medium">✅ Processing completed successfully</p>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
-          <div>
-            <h3 className="font-semibold text-gray-900 text-lg mb-3">Summary:</h3>
-            <p className="text-gray-700 leading-relaxed">{summaryText}</p>
-          </div>
-
-          {outputLinks && outputLinks.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-gray-900 text-lg mb-3">Links:</h3>
-              <ul className="space-y-2">
-                {outputLinks.map((link: any, index: number) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-gray-600 mr-2">-</span>
-                    <div>
-                      <span className="text-gray-900">{link.title || `Link ${index + 1}`}: </span>
-                      <a 
-                        href={link.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 underline"
-                      >
-                        {link.url}
-                      </a>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+  const handleTimestampClick = (startTime: number) => {
+    // In a real implementation, this would seek to the timestamp in the video player
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}&t=${Math.floor(startTime)}s`;
+    window.open(youtubeUrl, '_blank');
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
       <button
-        onClick={handleToggle}
+        onClick={() => setIsVisible(!isVisible)}
         className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Clock size={20} className="text-gray-600" />
-          <span className="font-medium text-gray-900">Process Video</span>
-          <span className="text-sm text-gray-500">({videoId})</span>
+          <span className="font-medium text-gray-900">Transcript</span>
         </div>
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
@@ -114,19 +100,33 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
           {isLoading && (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-              <p className="text-gray-600 mt-2">Processing video data...</p>
+              <p className="text-gray-600 mt-2">Loading transcript...</p>
             </div>
           )}
 
           {error && !isLoading && (
             <div className="text-center py-8">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-700">{error}</p>
-              </div>
+              <p className="text-gray-600">{error}</p>
             </div>
           )}
 
-          {webhookResponse && !isLoading && !error && renderFormattedResponse()}
+          {!isLoading && isAvailable && transcript.length > 0 && (
+            <ScrollArea className="h-96 w-full border rounded-lg p-4">
+              <div className="space-y-3">
+                {transcript.map((item, index) => (
+                  <div key={index} className="flex gap-3 group">
+                    <button
+                      onClick={() => handleTimestampClick(item.start)}
+                      className="flex-shrink-0 text-xs text-blue-600 hover:text-blue-800 font-mono bg-blue-50 px-2 py-1 rounded group-hover:bg-blue-100 transition-colors"
+                    >
+                      {formatTime(item.start)}
+                    </button>
+                    <p className="text-gray-800 text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
         </div>
       )}
     </div>

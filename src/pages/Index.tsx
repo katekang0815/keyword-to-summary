@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+
+import { useState } from 'react';
 import { searchYouTubeVideos, VideoResult, SearchParams } from '@/services/youtubeService';
 import SearchFilters from '@/components/SearchFilters';
 import VideoCard from '@/components/VideoCard';
@@ -17,50 +17,6 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
-  const location = useLocation();
-
-  // Load preserved state on component mount
-  useEffect(() => {
-    const preservedState = sessionStorage.getItem('youtube-search-state');
-    if (preservedState) {
-      try {
-        const parsed = JSON.parse(preservedState);
-        setSearchParams(parsed.searchParams);
-        setVideos(parsed.videos);
-        setHasSearched(parsed.hasSearched);
-        console.log('Loaded preserved state:', parsed);
-      } catch (error) {
-        console.error('Error loading preserved state:', error);
-      }
-    }
-  }, []);
-
-  // Save state whenever it changes (for navigation preservation)
-  useEffect(() => {
-    if (hasSearched && videos.length > 0) {
-      const stateToSave = {
-        searchParams,
-        videos,
-        hasSearched
-      };
-      sessionStorage.setItem('youtube-search-state', JSON.stringify(stateToSave));
-      console.log('Saved state to sessionStorage:', stateToSave);
-    }
-  }, [searchParams, videos, hasSearched]);
-
-  // Clear preserved state on browser refresh (not on navigation)
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Only clear on actual page refresh, not navigation
-      sessionStorage.removeItem('youtube-search-state');
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
 
   const handleSearch = async () => {
     if (!searchParams.keyword.trim()) {
