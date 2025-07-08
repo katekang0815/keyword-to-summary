@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchYouTubeVideos, VideoResult, SearchParams } from '@/services/youtubeService';
 import SearchFilters from '@/components/SearchFilters';
 import VideoCard from '@/components/VideoCard';
@@ -17,6 +17,19 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
+
+  // Load saved search results and params from sessionStorage on mount
+  useEffect(() => {
+    const savedResults = sessionStorage.getItem('searchResults');
+    const savedParams = sessionStorage.getItem('searchParams');
+    const savedHasSearched = sessionStorage.getItem('hasSearched');
+
+    if (savedResults && savedParams && savedHasSearched) {
+      setVideos(JSON.parse(savedResults));
+      setSearchParams(JSON.parse(savedParams));
+      setHasSearched(JSON.parse(savedHasSearched));
+    }
+  }, []);
 
   const handleSearch = async () => {
     if (!searchParams.keyword.trim()) {
@@ -38,6 +51,11 @@ const Index = () => {
       
       setVideos(results);
       setHasSearched(true);
+      
+      // Save search results and params to sessionStorage
+      sessionStorage.setItem('searchResults', JSON.stringify(results));
+      sessionStorage.setItem('searchParams', JSON.stringify(searchParams));
+      sessionStorage.setItem('hasSearched', JSON.stringify(true));
       
       if (results.length === 0) {
         toast({
