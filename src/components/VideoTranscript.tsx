@@ -35,8 +35,26 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
       setIsPlaying(false);
     } else {
       const utterance = new SpeechSynthesisUtterance(webhookData.response.text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
+      
+      // Try to find a feminine voice that sounds more like Elsa
+      const voices = speechSynthesis.getVoices();
+      const elsaLikeVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('female') ||
+        voice.name.toLowerCase().includes('woman') ||
+        voice.name.toLowerCase().includes('samantha') ||
+        voice.name.toLowerCase().includes('victoria') ||
+        voice.name.toLowerCase().includes('karen') ||
+        voice.name.toLowerCase().includes('zira') ||
+        voice.name.toLowerCase().includes('alice') ||
+        voice.name.toLowerCase().includes('serena')
+      );
+      
+      if (elsaLikeVoice) {
+        utterance.voice = elsaLikeVoice;
+      }
+      
+      utterance.rate = 0.85; // Slightly slower for more elegant speech
+      utterance.pitch = 1.2; // Higher pitch for more Elsa-like sound
       utterance.volume = 1;
       
       utterance.onstart = () => setIsPlaying(true);
