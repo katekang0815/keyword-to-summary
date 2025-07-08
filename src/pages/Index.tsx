@@ -85,10 +85,10 @@ const Index = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            YouTube Trending Videos
+            YouTube Keyword Video Scraper with AI Summaries
           </h1>
           <p className="text-gray-600">
-            Discover the most viewed videos
+            Instant YouTube Research: Find & Summarize Top Videos
           </p>
         </div>
 
