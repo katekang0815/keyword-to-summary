@@ -36,25 +36,22 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     } else {
       const utterance = new SpeechSynthesisUtterance(webhookData.response.text);
       
-      // Try to find a feminine voice that sounds more like Elsa
+      // Try to find a natural human-like voice
       const voices = speechSynthesis.getVoices();
-      const elsaLikeVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('female') ||
-        voice.name.toLowerCase().includes('woman') ||
-        voice.name.toLowerCase().includes('samantha') ||
-        voice.name.toLowerCase().includes('victoria') ||
-        voice.name.toLowerCase().includes('karen') ||
-        voice.name.toLowerCase().includes('zira') ||
-        voice.name.toLowerCase().includes('alice') ||
-        voice.name.toLowerCase().includes('serena')
-      );
+      const naturalVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && 
+        (voice.name.toLowerCase().includes('natural') ||
+         voice.name.toLowerCase().includes('neural') ||
+         voice.name.toLowerCase().includes('premium') ||
+         voice.name.toLowerCase().includes('default'))
+      ) || voices.find(voice => voice.lang.startsWith('en') && voice.default);
       
-      if (elsaLikeVoice) {
-        utterance.voice = elsaLikeVoice;
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
       }
       
-      utterance.rate = 0.85; // Slightly slower for more elegant speech
-      utterance.pitch = 1.2; // Higher pitch for more Elsa-like sound
+      utterance.rate = 1.0; // Normal speaking rate
+      utterance.pitch = 1.0; // Natural pitch
       utterance.volume = 1;
       
       utterance.onstart = () => setIsPlaying(true);
