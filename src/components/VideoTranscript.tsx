@@ -18,12 +18,13 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:5678/webhook/summaryapp', {
+      const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      const response = await fetch('http://localhost:5678/webhook-test/summaryapp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoId }),
+        body: JSON.stringify({ url: videoUrl }),
       });
 
       const data = await response.json();
