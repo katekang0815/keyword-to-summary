@@ -55,7 +55,10 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     const elements: JSX.Element[] = [];
     
     lines.forEach((line, index) => {
-      const trimmedLine = line.trim();
+      let trimmedLine = line.trim();
+      
+      // Remove markdown headers (## and #) but keep the text
+      trimmedLine = trimmedLine.replace(/^#{1,2}\s*/, '');
       
       // Main headings (first line or lines that look like main titles)
       if (index === 0 || (trimmedLine.length > 0 && !trimmedLine.includes(':') && !trimmedLine.startsWith('-') && trimmedLine === trimmedLine.toUpperCase())) {
@@ -109,7 +112,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
             {/* Summary Section */}
             <div>
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                📤 Summary:
+                📌 Summary:
               </h3>
               <div className="bg-gray-50 p-4 rounded-lg">
                 {parseStructuredContent(webhookData.response.text)}
