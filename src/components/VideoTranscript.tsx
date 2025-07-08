@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Volume2, VolumeX } from 'lucide-react';
 
 interface WebhookResponse {
   response: {
@@ -18,6 +18,34 @@ interface VideoTranscriptProps {
 const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
   const [webhookData, setWebhookData] = useState<WebhookResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, []);
+
+  const handlePlaySummary = () => {
+    if (!speechSynthesis || !webhookData) return;
+
+    if (isPlaying) {
+      speechSynthesis.cancel();
+      setIsPlaying(false);
+    } else {
+      const utterance = new SpeechSynthesisUtterance(webhookData.response.text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setIsPlaying(false);
+      
+      speechSynthesis.speak(utterance);
+    }
+  };
 
   useEffect(() => {
     const fetchWebhookData = async () => {
@@ -111,9 +139,19 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
           <div className="space-y-6">
             {/* Summary Section */}
             <div>
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                📌 Summary:
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                  📌 Summary:
+                </h3>
+                <button
+                  onClick={handlePlaySummary}
+                  className="flex items-center gap-1 px-3 py-1 text-sm bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors"
+                  disabled={!speechSynthesis}
+                >
+                  {isPlaying ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                  {isPlaying ? 'Stop' : 'Listen'}
+                </button>
+              </div>
               <div className="bg-gray-50 p-4 rounded-lg">
                 {parseStructuredContent(webhookData.response.text)}
               </div>
