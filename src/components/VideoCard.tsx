@@ -10,9 +10,26 @@ interface VideoCardProps {
 const VideoCard = ({ video, rank }: VideoCardProps) => {
   const navigate = useNavigate();
 
-  const handleVideoClick = () => {
-    // Navigate to detail page with video data
-    navigate(`/videos/${video.id}`, { state: { video } });
+  const handleVideoClick = async () => {
+    try {
+      const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
+      
+      // Send video URL to webhook
+      await fetch('http://localhost:5678/webhook-test/summaryapp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: videoUrl }),
+      });
+      
+      // Navigate to detail page with video data
+      navigate(`/videos/${video.id}`, { state: { video } });
+    } catch (error) {
+      console.error('Failed to send video URL to webhook:', error);
+      // Still navigate even if webhook fails
+      navigate(`/videos/${video.id}`, { state: { video } });
+    }
   };
 
   const formatTimeAgo = (publishedAt: string) => {
