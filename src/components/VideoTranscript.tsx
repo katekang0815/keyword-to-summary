@@ -54,18 +54,26 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         
         const response = await fetch('https://yehsun.app.n8n.cloud/webhook-test/summaryapp', {
           method: 'POST',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ url: videoUrl }),
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          setWebhookData(data);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        setWebhookData(data);
       } catch (error) {
         console.error('Failed to fetch webhook data:', error);
+        console.error('Error details:', {
+          videoId,
+          videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+          error: error.message
+        });
       } finally {
         setIsLoading(false);
       }
