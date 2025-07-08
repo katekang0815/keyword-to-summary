@@ -67,7 +67,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
         
-        const response = await fetch('https://yehsun.app.n8n.cloud/webhook-test/summaryapp', {
+        const response = await fetch('https://yehsun.app.n8n.cloud/webhook/summaryapp', {
           method: 'POST',
           mode: 'cors',
           headers: {
