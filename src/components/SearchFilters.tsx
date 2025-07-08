@@ -16,7 +16,7 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Search YouTube Videos</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Keyword
@@ -47,25 +47,6 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="60d">Last 60 days</SelectItem>
               <SelectItem value="90d">Last 90 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Language
-          </label>
-          <Select 
-            value={params.language} 
-            onValueChange={(value: 'en' | 'ko' | 'both') => onParamsChange({ ...params, language: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="both">Both English & Korean</SelectItem>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="ko">Korean</SelectItem>
             </SelectContent>
           </Select>
         </div>
