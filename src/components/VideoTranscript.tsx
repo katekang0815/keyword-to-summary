@@ -50,6 +50,52 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     window.open(url, '_blank');
   };
 
+  const parseStructuredContent = (text: string) => {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    const elements: JSX.Element[] = [];
+    
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Main headings (first line or lines that look like main titles)
+      if (index === 0 || (trimmedLine.length > 0 && !trimmedLine.includes(':') && !trimmedLine.startsWith('-') && trimmedLine === trimmedLine.toUpperCase())) {
+        elements.push(
+          <h2 key={index} className="text-xl font-bold text-gray-900 mb-3 mt-6 first:mt-0">
+            {trimmedLine}
+          </h2>
+        );
+      }
+      // Section headings (lines that end with headings style or are standalone short lines)
+      else if (trimmedLine.length < 60 && !trimmedLine.includes('.') && !trimmedLine.includes(',') && !trimmedLine.includes(':')) {
+        elements.push(
+          <h3 key={index} className="text-lg font-semibold text-gray-800 mb-2 mt-5">
+            {trimmedLine}
+          </h3>
+        );
+      }
+      // List items with labels (like "Core Tools:", "Advanced Tools:")
+      else if (trimmedLine.includes(':') && trimmedLine.split(':')[0].length < 30) {
+        const [label, content] = trimmedLine.split(':');
+        elements.push(
+          <div key={index} className="mb-2">
+            <span className="font-semibold text-gray-800">{label.trim()}:</span>
+            <span className="text-gray-700 ml-1">{content.trim()}</span>
+          </div>
+        );
+      }
+      // Regular paragraphs
+      else {
+        elements.push(
+          <p key={index} className="text-gray-700 leading-relaxed mb-3">
+            {trimmedLine}
+          </p>
+        );
+      }
+    });
+    
+    return elements;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
       <div className="px-6 py-6">
@@ -65,9 +111,9 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
                 📤 Summary:
               </h3>
-              <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
-                {webhookData.response.text}
-              </p>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                {parseStructuredContent(webhookData.response.text)}
+              </div>
             </div>
 
             {/* Related Videos Section */}
