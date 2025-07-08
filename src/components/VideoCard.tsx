@@ -15,7 +15,7 @@ const VideoCard = ({ video, rank }: VideoCardProps) => {
       const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
       
       // Send video URL to webhook
-      await fetch('http://localhost:5678/webhook-test/summaryapp', {
+      await fetch('https://yehsun.app.n8n.cloud/webhook-test/summaryapp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
