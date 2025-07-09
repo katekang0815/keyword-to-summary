@@ -1,54 +1,23 @@
-# Welcome to your Lovable project
+# Welcome to my YouTube Scraper with AI Summaries project
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/a24ceb18-a38c-4a69-8f04-41606a1439b6
+**URL**: [https://lovable.dev/projects/a24ceb18-a38c-4a69-8f04-41606a1439b6](https://keyword-to-summary.lovable.app/)
 
-## How can I edit this code?
+## Overcoming YouTube Transcript API Limitation:
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/a24ceb18-a38c-4a69-8f04-41606a1439b6) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+💡 Approach: Apify Actor + Workflow Integration
+ • Transcript Fetching: Successfully integrated Apify Actor to fetch YouTube transcripts.
+ • Workflow Automation: Connected the process into an n8n workflow for seamless automation.
+ • AI-Powered Summarization: Leveraged LangChain to generate customized video summaries.
+ • Relevant Video Discovery: Used an AI agent and SerpAPI to extract related videos from Google Search.
+ • Frontend Integration: Set up a webhook to receive URLs from the frontend and return results via n8n.
+ 
+➡️  Next Steps
+ • Handle Longer Videos: Currently, the workflow processes videos up to ~20 minutes. Planning to extend this limit.
+ • Upgrade Audio Quality: Improve AI-generated audio to sound more human-like.
+ • Multiple API Options: Develop multi-API support for authenticated users.
+ • Improve uploading time (currently too long)
 
 ## What technologies are used for this project?
 
@@ -60,14 +29,3 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/a24ceb18-a38c-4a69-8f04-41606a1439b6) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
