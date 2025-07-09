@@ -10,7 +10,8 @@ const Index = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
     keyword: '',
     timeRange: '24h',
-    language: 'both'
+    language: 'both',
+    videoDuration: 'any'
   });
   
   const [videos, setVideos] = useState<VideoResult[]>([]);

@@ -9,6 +9,7 @@ interface SearchParams {
   keyword: string;
   timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
   language: 'en' | 'ko' | 'both';
+  videoDuration?: 'short' | 'medium' | 'long' | 'any';
 }
 
 interface VideoResult {
@@ -54,6 +55,17 @@ const formatDuration = (duration: string): string => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
+const getDurationInMinutes = (duration: string): number => {
+  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  if (!match) return 0;
+  
+  const hours = parseInt(match[1]?.replace('H', '') || '0');
+  const minutes = parseInt(match[2]?.replace('M', '') || '0');
+  const seconds = parseInt(match[3]?.replace('S', '') || '0');
+  
+  return hours * 60 + minutes + (seconds > 0 ? 1 : 0); // Round up if there are seconds
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -79,6 +91,10 @@ serve(async (req) => {
     if (!['en', 'ko', 'both'].includes(searchParams.language)) {
       throw new Error('Invalid language parameter');
     }
+    
+    if (searchParams.videoDuration && !['short', 'medium', 'long', 'any'].includes(searchParams.videoDuration)) {
+      throw new Error('Invalid videoDuration parameter');
+    }
 
     // Sanitize keyword
     const sanitizedKeyword = searchParams.keyword.trim().substring(0, 100);
@@ -86,7 +102,7 @@ serve(async (req) => {
       throw new Error('Keyword cannot be empty');
     }
 
-    const { keyword, timeRange, language } = searchParams;
+    const { keyword, timeRange, language, videoDuration } = searchParams;
     const now = new Date();
     
     // Parse timeRange
@@ -116,6 +132,9 @@ serve(async (req) => {
     searchUrl.searchParams.set('maxResults', '50');
     if (language !== 'both') {
       searchUrl.searchParams.set('relevanceLanguage', language);
+    }
+    if (videoDuration && videoDuration !== 'any') {
+      searchUrl.searchParams.set('videoDuration', videoDuration);
     }
 
     console.log('Making YouTube search request:', sanitizedKeyword);
@@ -159,9 +178,19 @@ serve(async (req) => {
         channelId: item.snippet.channelId,
       }))
       .filter((v) => {
-        if (language === 'both') return true;
-        const lang = detectLanguage(v.title);
-        return lang === language;
+        // Language filter
+        if (language !== 'both') {
+          const lang = detectLanguage(v.title);
+          if (lang !== language) return false;
+        }
+        
+        // Duration filter - specifically filter for videos less than 23 minutes
+        if (videoDuration && videoDuration !== 'any') {
+          const durationInMinutes = getDurationInMinutes(v.duration);
+          if (durationInMinutes >= 23) return false; // Filter out videos 23 minutes or longer
+        }
+        
+        return true;
       })
       .sort((a, b) => b.viewCount - a.viewCount);
 

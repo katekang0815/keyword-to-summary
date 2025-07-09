@@ -15,6 +15,7 @@ export interface SearchParams {
   keyword: string;
   timeRange: '24h' | '7d' | '30d' | '60d' | '90d';
   language: 'en' | 'ko' | 'both';
+  videoDuration?: 'short' | 'medium' | 'long' | 'any';
 }
 
 export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoResult[]> => {
@@ -44,7 +45,8 @@ export const searchYouTubeVideos = async (params: SearchParams): Promise<VideoRe
         searchParams: {
           keyword: sanitizedKeyword,
           timeRange: params.timeRange,
-          language: params.language
+          language: params.language,
+          videoDuration: params.videoDuration
         }
       }
     });

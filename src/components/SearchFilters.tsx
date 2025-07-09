@@ -16,7 +16,7 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Search YouTube Videos</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Keyword
@@ -47,6 +47,26 @@ const SearchFilters = ({ params, onParamsChange, onSearch, isLoading }: SearchFi
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="60d">Last 60 days</SelectItem>
               <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Video Duration
+          </label>
+          <Select 
+            value={params.videoDuration || 'any'} 
+            onValueChange={(value: 'short' | 'medium' | 'long' | 'any') => onParamsChange({ ...params, videoDuration: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any duration</SelectItem>
+              <SelectItem value="short">Short (&lt; 4 min)</SelectItem>
+              <SelectItem value="medium">Medium (4-20 min)</SelectItem>
+              <SelectItem value="long">Long (&gt; 20 min)</SelectItem>
             </SelectContent>
           </Select>
         </div>
