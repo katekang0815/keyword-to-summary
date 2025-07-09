@@ -1,4 +1,4 @@
-# Welcome to my YouTube Scraper with AI Summaries project
+# YouTube Scraper with AI Summaries project
 
 ## Project info
 
