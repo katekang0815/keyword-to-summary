@@ -66,6 +66,8 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
     const fetchWebhookData = async () => {
       try {
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        console.log('VideoTranscript: Fetching summary for video ID:', videoId);
+        console.log('VideoTranscript: Video URL:', videoUrl);
         
         const response = await fetch('https://yehsun.app.n8n.cloud/webhook/summaryapp', {
           method: 'POST',
@@ -81,6 +83,7 @@ const VideoTranscript = ({ videoId }: VideoTranscriptProps) => {
         }
         
         const data = await response.json();
+        console.log('VideoTranscript: Webhook response received:', data);
         setWebhookData(data);
       } catch (error) {
         console.error('Failed to fetch webhook data:', error);
