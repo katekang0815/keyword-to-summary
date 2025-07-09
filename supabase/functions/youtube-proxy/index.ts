@@ -184,10 +184,15 @@ serve(async (req) => {
           if (lang !== language) return false;
         }
         
-        // Duration filter - specifically filter for videos less than 23 minutes
+        // Always filter out videos 23 minutes or longer
+        const durationInMinutes = getDurationInMinutes(v.duration);
+        if (durationInMinutes >= 23) return false;
+        
+        // Additional duration filter based on user selection
         if (videoDuration && videoDuration !== 'any') {
-          const durationInMinutes = getDurationInMinutes(v.duration);
-          if (durationInMinutes >= 23) return false; // Filter out videos 23 minutes or longer
+          if (videoDuration === 'short' && durationInMinutes >= 4) return false;
+          if (videoDuration === 'medium' && (durationInMinutes < 4 || durationInMinutes > 20)) return false;
+          if (videoDuration === 'long' && durationInMinutes <= 20) return false;
         }
         
         return true;
