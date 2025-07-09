@@ -2,4 +2,7 @@
 project_id = "qemzsmmtnijulzyjpznb"
 
 [functions.get-transcript]
-verify_jwt = false
+verify_jwt = true
+
+[functions.youtube-proxy]
+verify_jwt = true
